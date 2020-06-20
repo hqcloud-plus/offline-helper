@@ -1,0 +1,37 @@
+--- 
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata: 
+  name: "hqcloud-kafka-template"
+  namespace: "kube-system"
+  labels: 
+    name: "hqcloud-kafka-template"
+spec: 
+  replicas: 1
+  selector: 
+    matchLabels:
+      name: "hqcloud-kafka-template"
+  template: 
+    metadata: 
+      labels: 
+        name: "hqcloud-kafka-template"
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+      containers:
+      - name: "kafka-template"
+        image: "registry.hqcloud.com.cn:5000/hqcloud/kafka-template:1.0"
+        imagePullPolicy: "IfNotPresent"
+        env:
+        - name: "ETCD_ENDPOINT"
+          value: "http://hqcloud-etcd.kube-system:2379"
+        volumeMounts:
+        - name: "auth"
+          mountPath: "/root/.kube/config"
+      volumes:
+      - name: "auth"
+        hostPath:
+          path: "/root/.kube/config"
