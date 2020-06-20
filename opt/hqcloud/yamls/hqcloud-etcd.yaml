@@ -21,12 +21,21 @@ spec:
       tolerations:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
+      hostNetwork: true
       containers:
       - name: "keycloak"
         image: "registry.hqcloud.com.cn:5000/hqcloud/etcd:v3.4.4"
         imagePullPolicy: "IfNotPresent"
         ports:
-        - containerPort: 2379
+        - name: etcd-port
+          containerPort: 2379
+        volumeMounts:
+        - name: "etcddata"
+          mountPath: "/var/lib/etcd"
+      volumes: 
+      - name: "etcddata"
+        hostPath:
+          path: "/var/lib/etcd"
 ---
 apiVersion: v1
 kind: Service
@@ -36,10 +45,8 @@ metadata:
   labels:
     name: hqcloud-etcd
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
   - port: 2379
-    protocol: TCP
     targetPort: 2379
     name: etcd-port
-    nodePort: 32379

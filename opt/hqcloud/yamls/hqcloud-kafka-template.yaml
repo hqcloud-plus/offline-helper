@@ -31,7 +31,12 @@ spec:
         volumeMounts:
         - name: "auth"
           mountPath: "/root/.kube/config"
+        - name: "etcd"
+          mountPath: "/usr/etcd/etcdctl"
       volumes:
       - name: "auth"
         hostPath:
           path: "/root/.kube/config"
+      - name: "etcd"
+        hostPath:
+          path: "/usr/etcd/etcdctl"
