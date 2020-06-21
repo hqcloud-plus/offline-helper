@@ -1,0 +1,57 @@
+--- 
+apiVersion: "v1"
+kind: "Pod"
+metadata: 
+  name: "hqcloud-etcd"
+  namespace: "kube-system"
+  labels: 
+    name: "hqcloud-etcd"
+spec: 
+  nodeSelector:
+    node-role.kubernetes.io/master: ""
+  tolerations:
+  - key: node-role.kubernetes.io/master
+    effect: NoSchedule
+  containers:
+  - name: "hqcloud-etcd"
+    image: "registry.hqcloud.com.cn:5000/hqcloud/etcd:v3.4.4"
+    imagePullPolicy: "IfNotPresent"
+    command:
+    - etcd
+    - --name=hqcloud-etcd
+    - --listen-client-urls=http://0.0.0.0:2379
+    - --advertise-client-urls=http://0.0.0.0:2379
+    - --listen-peer-urls=http://0.0.0.0:2380
+    - --initial-advertise-peer-urls=http://0.0.0.0:2380
+    - --initial-cluster=hqcloud-etcd=http://0.0.0.0:2380
+    - --initial-cluster-token=tkn
+    - --initial-cluster-state=new
+    - --log-level=info
+    - --logger=zap
+    - --log-outputs=stderr
+    ports:
+    - name: etcd-port
+      containerPort: 2379
+    volumeMounts:
+    - name: "etcddata"
+      mountPath: "/var/lib/etcd"
+  volumes: 
+  - name: "etcddata"
+    hostPath:
+      path: "/opt/hqcloud/lib/etcd"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hqcloud-etcd
+  namespace: kube-system
+  labels:
+    name: hqcloud-etcd
+spec:
+  type: NodePort
+  ports:
+  - port: 2379
+    protocol: TCP
+    targetPort: 2379
+    name: etcd-port
+    nodePort: 32379

@@ -1,0 +1,62 @@
+--- 
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata: 
+  name: "hqcloud-osms"
+  namespace: "kube-system"
+  labels: 
+    name: "hqcloud-osms"
+spec: 
+  replicas: 1
+  selector: 
+    matchLabels:
+      name: "hqcloud-osms"
+  template: 
+    metadata: 
+      labels: 
+        name: "hqcloud-osms"
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+      containers:
+      - name: "osms"
+        image: "registry.hqcloud.com.cn:5000/hqcloud/dynastie-osms:1.0"
+        imagePullPolicy: "IfNotPresent"
+        ports:
+        - containerPort: 8080
+        env:
+        - name: "DATASOURCE_URL"
+          value: "jdbc:mysql://hqcloud-database.kube-system:3306/dynastie_osms?useUnicode=
+true&characterEncoding=utf8&characterSetResults=utf8"
+        - name: "DATASOURCE_USERNAME"
+          value: "root"
+        - name: "DATASOURCE_PASSWORD"
+          value: "multifort"
+        volumeMounts:
+        - name: "hosts"
+          mountPath: "/etc/hosts"
+      volumes:
+      - name: "hosts"
+        hostPath:
+          path: "/etc/hosts"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hqcloud-osms
+  namespace: kube-system
+  labels: 
+    name: hqcloud-osms
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+    name: osms-port
+    nodePort: 32052
+  selector:
+    name: hqcloud-osms

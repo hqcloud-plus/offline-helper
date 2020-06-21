@@ -1,0 +1,42 @@
+--- 
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata: 
+  name: "hqcloud-postgresql-template"
+  namespace: "kube-system"
+  labels: 
+    name: "hqcloud-postgresql-template"
+spec: 
+  replicas: 1
+  selector: 
+    matchLabels:
+      name: "hqcloud-postgresql-template"
+  template: 
+    metadata: 
+      labels: 
+        name: "hqcloud-postgresql-template"
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+      containers:
+      - name: "postgresql-template"
+        image: "registry.hqcloud.com.cn:5000/hqcloud/postgresql-template:1.0"
+        imagePullPolicy: "IfNotPresent"
+        env:
+        - name: "ETCD_ENDPOINT"
+          value: "http://hqcloud-etcd.kube-system:2379"
+        volumeMounts:
+        - name: "auth"
+          mountPath: "/root/.kube/config"
+        - name: "etcd"
+          mountPath: "/usr/etcd/etcdctl"
+      volumes:
+      - name: "auth"
+        hostPath:
+          path: "/root/.kube/config"
+      - name: "etcd"
+        hostPath:
+          path: "/usr/etcd/etcdctl"
