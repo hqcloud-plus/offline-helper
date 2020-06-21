@@ -47,7 +47,7 @@ spec:
       tolerations:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
-      restartPolicy: Never
+      restartPolicy: OnFailure
       containers:
       - image: registry.hqcloud.com.cn:5000/hqcloud/mariadb:10.5.3
         command:
