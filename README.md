@@ -1,6 +1,6 @@
 # offline-helper
 
-本项目主要用于rpm打包，你需要在CentOS环境下，首先执行
+本项目主要用于rpm打包，目前仅支持CentOS
 
 ```
 yum install rpm-build gcc gcc-c++
